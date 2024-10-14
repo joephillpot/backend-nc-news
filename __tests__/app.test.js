@@ -13,6 +13,17 @@ afterAll(() => {
   return db.end();
 });
 
+describe('/api/not-a-path', () => {
+  test('GET: 404 - Responds with 404 Not Found when given an invalid path', () => {
+    return request(app)
+      .get('/api/not-valid')
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe('Not found');
+      });
+  });
+});
+
 describe('/api/topics', () => {
   test('GET: 200 - Responds with an array of topics with slug and description properties', () => {
     return request(app)

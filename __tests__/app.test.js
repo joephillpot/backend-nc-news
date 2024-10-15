@@ -4,6 +4,7 @@ const data = require('../db/data/test-data');
 const request = require('supertest');
 const db = require('../db/connection');
 const endpoints = require('../endpoints.json');
+require("jest-sorted")
 
 beforeEach(() => {
   return seed(data);
@@ -63,6 +64,7 @@ describe('/api/articles/:article_id', () => {
         expect(article).toHaveProperty("votes");
         expect(article).toHaveProperty("article_img_url");
         expect(article).toHaveProperty("body");
+        expect(article.article_id).toBe(2)
       });
   });
   test('GET: 400 - Responds with Bad request when given an invalid article_id', () => {
@@ -80,6 +82,37 @@ describe('/api/articles/:article_id', () => {
       .expect(404)
       .then(({ body }) => {
         expect(body.msg).toBe('Not found')
+      });
+  });
+});
+
+describe('/api/articles', () => {
+  test('GET: 200 - Responds with an array of articles with author, title, article_id, topic, created_at, votes, article_img_url, comment_count properties', () => {
+    return request(app)
+      .get('/api/articles')
+      .expect(200)
+      .then(({ body: { articles } }) => {
+        expect(articles).toHaveLength(13)
+        expect(articles).toBeSortedBy('created_at', {descending: true})
+        articles.forEach((article) => {
+          expect(articles).not.toContain(articles.body);
+          expect(typeof article.comment_count).toBe("string")
+          expect(typeof article.created_at).toBe("string")
+        });
+      });
+  });
+  test('GET: 200 - Responds with an array of articles with author, title, article_id, topic, created_at, votes, article_img_url, comment_count properties', () => {
+    return request(app)
+      .get('/api/articles')
+      .expect(200)
+      .then(({ body: { articles } }) => {
+        expect(articles).toHaveLength(13)
+        expect(articles).toBeSortedBy('created_at', {descending: true})
+        articles.forEach((article) => {
+          expect(articles).not.toContain(articles.body);
+          expect(typeof article.comment_count).toBe("string")
+          expect(typeof article.created_at).toBe("string")
+        });
       });
   });
 });

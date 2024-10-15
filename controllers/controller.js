@@ -1,4 +1,4 @@
-const { fetchTopics, fetchArticleById, fetchArticles } = require('../models/model');
+const { fetchTopics, fetchArticleById, fetchArticles, fetchArticlesComments } = require('../models/model');
 const endpoints = require('../endpoints.json');
 
 exports.getEndpoints = (req, res) => {
@@ -30,6 +30,21 @@ exports.getArticleById = (req, res, next) => {
   return fetchArticleById(article_id)
     .then((article) => {
       res.status(200).send({ article });
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
+exports.getArticleComments = (req, res, next) => {
+  const { article_id } = req.params;
+  const promises = [fetchArticleById(article_id), fetchArticlesComments(article_id)];
+
+  Promise.all(promises)
+    .then((results) => {
+      const comments = results[1];
+      console.log(comments);
+      res.status(200).send({ comments });
     })
     .catch((err) => {
       next(err);

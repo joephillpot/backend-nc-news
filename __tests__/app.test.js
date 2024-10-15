@@ -4,7 +4,7 @@ const data = require('../db/data/test-data');
 const request = require('supertest');
 const db = require('../db/connection');
 const endpoints = require('../endpoints.json');
-require("jest-sorted")
+require('jest-sorted');
 
 beforeEach(() => {
   return seed(data);
@@ -32,8 +32,10 @@ describe('/api/topics', () => {
       .expect(200)
       .then(({ body: { topics } }) => {
         topics.forEach((topic) => {
-          expect(topic).toHaveProperty('slug');
-          expect(topic).toHaveProperty('description');
+          expect(topic).toMatchObject({
+            slug: expect.any(String),
+            description: expect.any(String),
+          });
         });
       });
   });
@@ -55,16 +57,17 @@ describe('/api/articles/:article_id', () => {
     return request(app)
       .get('/api/articles/2')
       .expect(200)
-      .then(({ body: {article}}) => {
-        expect(article).toHaveProperty("article_id");
-        expect(article).toHaveProperty("title");
-        expect(article).toHaveProperty("topic");
-        expect(article).toHaveProperty("author");
-        expect(article).toHaveProperty("created_at");
-        expect(article).toHaveProperty("votes");
-        expect(article).toHaveProperty("article_img_url");
-        expect(article).toHaveProperty("body");
-        expect(article.article_id).toBe(2)
+      .then(({ body: { article } }) => {
+        expect(article).toMatchObject({
+          article_id: 2,
+          title: expect.any(String),
+          author: expect.any(String),
+          topic: expect.any(String),
+          created_at: expect.any(String),
+          votes: expect.any(Number),
+          article_img_url: expect.any(String),
+          body: expect.any(String),
+        });
       });
   });
   test('GET: 400 - Responds with Bad request when given an invalid article_id', () => {
@@ -72,7 +75,7 @@ describe('/api/articles/:article_id', () => {
       .get('/api/articles/not-a-number')
       .expect(400)
       .then(({ body }) => {
-        expect(body.msg).toBe("Bad request")
+        expect(body.msg).toBe('Bad request');
       });
   });
   test('GET: 404 - Responds with 404 Not Found for an article that does not exist', () => {
@@ -81,7 +84,7 @@ describe('/api/articles/:article_id', () => {
       .get(`/api/articles/${nonExistentArticleId}`)
       .expect(404)
       .then(({ body }) => {
-        expect(body.msg).toBe('Not found')
+        expect(body.msg).toBe('Not found');
       });
   });
 });
@@ -96,15 +99,64 @@ describe('/api/articles', () => {
         expect(articles).toBeSortedBy('created_at', { descending: true });
         articles.forEach((article) => {
           expect(article).not.toContain(articles.body);
-          expect(article).toHaveProperty('author');
-          expect(article).toHaveProperty('title');
-          expect(article).toHaveProperty('article_id');
-          expect(article).toHaveProperty('topic');
-          expect(article).toHaveProperty('created_at');
-          expect(article).toHaveProperty('votes');
-          expect(article).toHaveProperty('article_img_url');
-          expect(article).toHaveProperty('comment_count');
+          expect(article).toMatchObject({
+            article_id: expect.any(Number),
+            title: expect.any(String),
+            author: expect.any(String),
+            topic: expect.any(String),
+            created_at: expect.any(String),
+            votes: expect.any(Number),
+            article_img_url: expect.any(String),
+            comment_count: expect.any(Number),
+          });
         });
+      });
+  });
+});
+
+describe('/api/articles/:article_id/comments', () => {
+  test('GET: 200 - Responds with an array of all comments for a given article_id', () => {
+    return request(app)
+      .get('/api/articles/1/comments')
+      .expect(200)
+      .then(({ body: { comments } }) => {
+        comments.forEach((comment) => {
+          expect(comment).toMatchObject({
+            comment_id: expect.any(Number),
+            votes: expect.any(Number),
+            created_at: expect.any(String),
+            author: expect.any(String),
+            body: expect.any(String),
+            article_id: expect.any(Number),
+          });
+        });
+        expect(comments).toBeSortedBy('created_at', { descending: true });
+      });
+  });
+  test('GET: 400 - Responds with Bad request when given an invalid article_id', () => {
+    return request(app)
+      .get('/api/articles/not-a-number/comments')
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe('Bad request');
+      });
+  });
+  test('GET: 404 - Responds with 404 Not Found for an article that does not exist', () => {
+    const nonExistentArticleId = 8094;
+    return request(app)
+      .get(`/api/articles/${nonExistentArticleId}/comments`)
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe('Not found');
+      });
+  });
+  test('GET: 200 - Responds with an empty array if the article_id is valid but there are no comments', () => {
+    const validIdWithNoComments = 13;
+    return request(app)
+      .get(`/api/articles/${validIdWithNoComments}/comments`)
+      .expect(200)
+      .then(({ body: { comments } }) => {
+        expect(comments).toEqual([]);
       });
   });
 });

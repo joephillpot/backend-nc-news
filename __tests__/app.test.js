@@ -92,26 +92,18 @@ describe('/api/articles', () => {
       .get('/api/articles')
       .expect(200)
       .then(({ body: { articles } }) => {
-        expect(articles).toHaveLength(13)
-        expect(articles).toBeSortedBy('created_at', {descending: true})
+        expect(articles).toHaveLength(13);
+        expect(articles).toBeSortedBy('created_at', { descending: true });
         articles.forEach((article) => {
-          expect(articles).not.toContain(articles.body);
-          expect(typeof article.comment_count).toBe("string")
-          expect(typeof article.created_at).toBe("string")
-        });
-      });
-  });
-  test('GET: 200 - Responds with an array of articles with author, title, article_id, topic, created_at, votes, article_img_url, comment_count properties', () => {
-    return request(app)
-      .get('/api/articles')
-      .expect(200)
-      .then(({ body: { articles } }) => {
-        expect(articles).toHaveLength(13)
-        expect(articles).toBeSortedBy('created_at', {descending: true})
-        articles.forEach((article) => {
-          expect(articles).not.toContain(articles.body);
-          expect(typeof article.comment_count).toBe("string")
-          expect(typeof article.created_at).toBe("string")
+          expect(article).not.toContain(articles.body);
+          expect(article).toHaveProperty('author');
+          expect(article).toHaveProperty('title');
+          expect(article).toHaveProperty('article_id');
+          expect(article).toHaveProperty('topic');
+          expect(article).toHaveProperty('created_at');
+          expect(article).toHaveProperty('votes');
+          expect(article).toHaveProperty('article_img_url');
+          expect(article).toHaveProperty('comment_count');
         });
       });
   });

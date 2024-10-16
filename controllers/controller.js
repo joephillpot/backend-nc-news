@@ -4,6 +4,7 @@ const {
   fetchArticles,
   fetchArticleComments,
   insertArticleComment,
+  updateArticleVotes,
 } = require('../models/model');
 const endpoints = require('../endpoints.json');
 
@@ -67,6 +68,21 @@ exports.postArticleComment = (req, res, next) => {
       const comment = results[1];
 
       res.status(201).send({ comment });
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
+exports.patchArticleVotes = (req, res, next) => {
+  const { article_id } = req.params;
+  const inc_votes = req.body.inc_votes;
+  const promises = [fetchArticleById(article_id), updateArticleVotes(article_id, inc_votes)];
+
+  Promise.all(promises)
+    .then((results) => {
+      const newVote = results[1];
+      res.status(200).send({ msg: newVote });
     })
     .catch((err) => {
       next(err);

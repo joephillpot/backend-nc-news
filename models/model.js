@@ -45,6 +45,9 @@ exports.fetchArticleComments = (article_id) => {
 };
 
 exports.insertArticleComment = (article_id, author, body) => {
+  if(!author || !body){
+    return Promise.reject({status: 400, msg: "Missing required fields"})
+  }
   return db
     .query(
       `INSERT INTO comments (article_id, author, body)

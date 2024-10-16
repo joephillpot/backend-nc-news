@@ -159,4 +159,104 @@ describe('/api/articles/:article_id/comments', () => {
         expect(comments).toEqual([]);
       });
   });
+  describe('POST:', () => {
+    test('POST: 201 - Updates the comments database with a new comment when passed the correct input', () => {
+      const articleId = 1;
+      const newComment = {
+        body: 'test comment body',
+        author: 'butter_bridge',
+      };
+      return request(app)
+        .post(`/api/articles/${articleId}/comments`)
+        .send(newComment)
+        .expect(201)
+        .then(({ body }) => {
+          expect(body.comment).toHaveProperty('author');
+          expect(body.comment).toHaveProperty('body');
+          expect(body.comment).toHaveProperty('article_id');
+          expect(body.comment).toMatchObject({
+            author: expect.any(String),
+            body: expect.any(String),
+            article_id: expect.any(Number),
+          });
+        });
+    });
+    test('POST: 201 - Updates the comments database with a new comment and ignores unnecessary properties', () => {
+      const articleId = 2;
+      const newComment = {
+        body: 'test comment body',
+        author: 'butter_bridge',
+        random: 'this is a random property'
+      };
+      return request(app)
+        .post(`/api/articles/${articleId}/comments`)
+        .send(newComment)
+        .expect(201)
+        .then(({ body }) => {
+          expect(body.comment).toHaveProperty('author');
+          expect(body.comment).toHaveProperty('body');
+          expect(body.comment).toHaveProperty('article_id');
+          expect(body.comment).toMatchObject({
+            author: expect.any(String),
+            body: expect.any(String),
+            article_id: expect.any(Number),
+          });
+        });
+    });
+    test('POST: 400 - Responds with 400 Invalid ID when passed an invalid ID', () => {
+      const invalidArticleId = "not-a-number"
+      const newComment = {
+        body: 'test comment body',
+        author: 'butter_bridge'
+      };
+      return request(app)
+        .post(`/api/articles/${invalidArticleId}/comments`)
+        .send(newComment)
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Bad request");
+        });
+    });
+    test('POST: 404 - Responds with 404 Not found when passed an invalid ID', () => {
+      const nonExistentArticleId = "4096"
+      const newComment = {
+        body: 'test comment body',
+        author: 'butter_bridge'
+      };
+      return request(app)
+        .post(`/api/articles/${nonExistentArticleId}/comments`)
+        .send(newComment)
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Not found");
+        });
+    });
+    test('POST: 400 - Responds with 400 when missing required field body/author', () => {
+      const articleId = 2
+      const newComment = {
+        body: 'test comment body',
+      };
+      return request(app)
+        .post(`/api/articles/${articleId}/comments`)
+        .send(newComment)
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Missing required fields");
+        });
+    });
+    test('POST: 404 - Responds with 404 when username does not exist', () => {
+      const articleId = 2
+      const newComment = {
+        body: 'test comment body',
+        author: "not-a-username"
+      };
+      return request(app)
+        .post(`/api/articles/${articleId}/comments`)
+        .send(newComment)
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Bad request");
+        });
+    });
+  });
 });

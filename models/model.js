@@ -31,7 +31,7 @@ exports.fetchArticleById = (article_id) => {
   });
 };
 
-exports.fetchArticlesComments = (article_id) => {
+exports.fetchArticleComments = (article_id) => {
   return db
     .query(
       `SELECT * FROM comments
@@ -41,5 +41,20 @@ exports.fetchArticlesComments = (article_id) => {
     )
     .then(({ rows }) => {
       return rows;
+    });
+};
+
+exports.insertArticleComment = (article_id, author, body) => {
+  if(!author || !body){
+    return Promise.reject({status: 400, msg: "Missing required fields"})
+  }
+  return db
+    .query(
+      `INSERT INTO comments (article_id, author, body)
+    VALUES ($1, $2, $3) RETURNING *`,
+      [article_id, author, body]
+    )
+    .then(({ rows }) => {
+      return rows[0];
     });
 };

@@ -6,6 +6,7 @@ const {
   insertArticleComment,
   updateArticleVotes,
   deleteCommentById,
+  fetchUsers,
 } = require('../models/model');
 const endpoints = require('../endpoints.json');
 
@@ -95,6 +96,16 @@ exports.deleteComment = (req, res, next) => {
   deleteCommentById(comment_id)
     .then(() => {
       res.sendStatus(204);
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
+exports.getUsers = (req, res, next) => {
+  return fetchUsers()
+    .then((users) => {
+      res.status(200).send({ users });
     })
     .catch((err) => {
       next(err);

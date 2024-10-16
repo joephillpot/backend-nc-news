@@ -61,11 +61,11 @@ exports.insertArticleComment = (article_id, author, body) => {
 
 exports.updateArticleVotes = (article_id, inc_votes) => {
   const isVotesEmpty = (inc_votes) => {
-    return JSON.stringify(inc_votes) === '{}'
-  }
-  
-  if(isVotesEmpty(inc_votes) || typeof inc_votes !== 'number'){
-    return Promise.reject({status: 400, msg: "Bad request"})
+    return JSON.stringify(inc_votes) === '{}';
+  };
+
+  if (isVotesEmpty(inc_votes) || typeof inc_votes !== 'number') {
+    return Promise.reject({ status: 400, msg: 'Bad request' });
   }
   return db
     .query(
@@ -77,5 +77,20 @@ exports.updateArticleVotes = (article_id, inc_votes) => {
     )
     .then(({ rows }) => {
       return rows[0];
+    });
+};
+
+exports.deleteCommentById = (comment_id) => {
+  return db
+    .query(
+      `DELETE
+    FROM comments
+    WHERE comment_id = $1`,
+      [comment_id]
+    )
+    .then((result) => {
+      if(result.rowCount === 0) {
+        return Promise.reject({status: 404, msg: 'Not found'})
+      }
     });
 };

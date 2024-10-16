@@ -5,6 +5,7 @@ const {
   fetchArticleComments,
   insertArticleComment,
   updateArticleVotes,
+  deleteCommentById,
 } = require('../models/model');
 const endpoints = require('../endpoints.json');
 
@@ -82,7 +83,18 @@ exports.patchArticleVotes = (req, res, next) => {
   Promise.all(promises)
     .then((results) => {
       const newVote = results[1];
-      res.status(200).send({ msg: newVote });
+      res.status(201).send({ msg: newVote });
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
+exports.deleteComment = (req, res, next) => {
+  const { comment_id } = req.params;
+  deleteCommentById(comment_id)
+    .then(() => {
+      res.sendStatus(204);
     })
     .catch((err) => {
       next(err);

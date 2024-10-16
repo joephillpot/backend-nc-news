@@ -87,6 +87,19 @@ describe('/api/articles/:article_id', () => {
         expect(body.msg).toBe('Not found');
       });
   });
+  describe('PATCH', () => {
+    test('PATCH: 200 - Updates the votes count amount when passed positive inc_votes', () => {
+      const articleId = 1
+      const newVotes = {inc_votes: 1};
+      return request(app)
+        .patch(`/api/articles/${articleId}`)
+        .send(newVotes)
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.msg.votes).toBe(data.articleData[0].votes + 1);
+        });
+    });
+  });
 });
 
 describe('/api/articles', () => {
@@ -260,3 +273,4 @@ describe('/api/articles/:article_id/comments', () => {
     });
   });
 });
+

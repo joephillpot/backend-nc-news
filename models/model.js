@@ -45,14 +45,28 @@ exports.fetchArticleComments = (article_id) => {
 };
 
 exports.insertArticleComment = (article_id, author, body) => {
-  if(!author || !body){
-    return Promise.reject({status: 400, msg: "Missing required fields"})
+  if (!author || !body) {
+    return Promise.reject({ status: 400, msg: 'Missing required fields' });
   }
   return db
     .query(
       `INSERT INTO comments (article_id, author, body)
     VALUES ($1, $2, $3) RETURNING *`,
       [article_id, author, body]
+    )
+    .then(({ rows }) => {
+      return rows[0];
+    });
+};
+
+exports.updateArticleVotes = (article_id, inc_votes) => {
+  return db
+    .query(
+      `UPDATE articles
+    SET votes = votes + $2
+    WHERE article_id = $1
+    RETURNING *`,
+      [article_id, inc_votes]
     )
     .then(({ rows }) => {
       return rows[0];

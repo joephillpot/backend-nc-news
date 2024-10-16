@@ -60,14 +60,38 @@
     "description": "posts a new comment to an article",
     "queries": [],
     "exampleRequest": {
-      "username": "insert-username",
+      "author": "insert-username",
       "body": "some sort of comment"
     },
     "exampleResponse": {
       "comment": {
-        "username": "insert-username",
+        "author": "insert-username",
         "body": "some sort of comment"
       }
     }
+  },
+  "PATCH /api/articles/:article_id": {
+    "description": "updates votes on the given article",
+    "queries": [],
+    "exampleRequest": {
+      "inc_votes": 1
+    },
+    "exampleResponse": {
+      "article": {
+        "author": "authors username",
+        "title": "some sort of title here",
+        "article_id": 1,
+        "body": "main body of text",
+        "topic": "a topic name",
+        "created_at":"2017-03-11 12:21:54.171+00",
+        "votes": 2,
+        "comment_count": 389
+      }
+    }
+  },
+  "DELETE /api/comments/:comment_id": {
+    "description": "deletes the given comment",
+    "queries": [],
+    "exampleResponse": "Status 204"
   }
 }

@@ -326,8 +326,45 @@ describe('/api/articles/:article_id/comments', () => {
   });
 });
 
-describe('/api/comments/:comment_id', () => {
-  test('', () => {
-    
+describe.only('/api/comments/:comment_id', () => {
+  test('DELETE: 204 - Removes a comment by comment ID when given a valid ID', () => {
+    const comment_id = 1;
+    return request(app)
+      .delete(`/api/comments/${comment_id}`)
+      .expect(204)
+      .then(({ body }) => {
+        expect(body).toEqual({});
+      });
+  });
+  test('DELETE: 204 - Removes a comment and checks it no longer exists', () => {
+    const comment_id = 2;
+    return request(app)
+      .delete(`/api/comments/${comment_id}`)
+      .then(() => {
+        return request(app)
+          .get(`/api/comments/${comment_id}`)
+          .expect(404)
+          .then(({ body }) => {
+            expect(body.msg).toBe('Not found');
+          });
+      });
+  });
+  test('DELETE: 404 - Returns 404 if given valid input but comment_id does not exist', () => {
+    const nonExistentCommentId = 4096;
+    return request(app)
+      .delete(`/api/comments/${nonExistentCommentId}`)
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe('Not found');
+      });
+  });
+  test('DELETE: 400 - Returns 400 if given a non valid input', () => {
+    const nonValidCommentId = "not-a-number";
+    return request(app)
+      .delete(`/api/comments/${nonValidCommentId}`)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe('Bad request');
+      });
   });
 });

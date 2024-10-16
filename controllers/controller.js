@@ -1,4 +1,10 @@
-const { fetchTopics, fetchArticleById, fetchArticles, fetchArticlesComments } = require('../models/model');
+const {
+  fetchTopics,
+  fetchArticleById,
+  fetchArticles,
+  fetchArticleComments,
+  insertArticleComment,
+} = require('../models/model');
 const endpoints = require('../endpoints.json');
 
 exports.getEndpoints = (req, res) => {
@@ -38,13 +44,29 @@ exports.getArticleById = (req, res, next) => {
 
 exports.getArticleComments = (req, res, next) => {
   const { article_id } = req.params;
-  const promises = [fetchArticleById(article_id), fetchArticlesComments(article_id)];
+  const promises = [fetchArticleById(article_id), fetchArticleComments(article_id)];
 
   Promise.all(promises)
     .then((results) => {
       const comments = results[1];
-      console.log(comments);
       res.status(200).send({ comments });
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
+exports.postArticleComment = (req, res, next) => {
+  const { article_id } = req.params;
+  const { author, body } = req.body;
+
+  const promises = [fetchArticleById(article_id), insertArticleComment(article_id, author, body)];
+
+  Promise.all(promises)
+    .then((results) => {
+      const comment = results[1];
+
+      res.status(201).send({ comment });
     })
     .catch((err) => {
       next(err);

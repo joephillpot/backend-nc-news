@@ -159,4 +159,27 @@ describe('/api/articles/:article_id/comments', () => {
         expect(comments).toEqual([]);
       });
   });
+  describe('POST:', () => {
+    test('POST: 201 - Updates the comments database with a new comment when passed the correct input', () => {
+      const articleId = 1;
+      const newComment = {
+        body: 'test comment body',
+        author: 'butter_bridge',
+      };
+      return request(app)
+        .post(`/api/articles/${articleId}/comments`)
+        .send(newComment)
+        .expect(201)
+        .then(({ body }) => {
+          expect(body.comment).toHaveProperty('author');
+          expect(body.comment).toHaveProperty('body');
+          expect(body.comment).toHaveProperty('article_id');
+          expect(body.comment).toMatchObject({
+            author: expect.any(String),
+            body: expect.any(String),
+            article_id: expect.any(Number)
+          });
+        });
+    });
+  });
 });

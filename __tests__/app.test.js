@@ -326,7 +326,7 @@ describe('/api/articles/:article_id/comments', () => {
   });
 });
 
-describe.only('/api/comments/:comment_id', () => {
+describe('/api/comments/:comment_id', () => {
   test('DELETE: 204 - Removes a comment by comment ID when given a valid ID', () => {
     const comment_id = 1;
     return request(app)

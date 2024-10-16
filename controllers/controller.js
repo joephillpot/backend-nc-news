@@ -82,7 +82,7 @@ exports.patchArticleVotes = (req, res, next) => {
   Promise.all(promises)
     .then((results) => {
       const newVote = results[1];
-      res.status(200).send({ msg: newVote });
+      res.status(201).send({ msg: newVote });
     })
     .catch((err) => {
       next(err);

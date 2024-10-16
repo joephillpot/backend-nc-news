@@ -88,24 +88,24 @@ describe('/api/articles/:article_id', () => {
       });
   });
   describe('PATCH', () => {
-    test('PATCH: 200 - Updates the votes count amount when passed positive inc_votes', () => {
+    test('PATCH: 201 - Updates the votes count amount when passed positive inc_votes', () => {
       const articleId = 1;
       const newVotes = { inc_votes: 1 };
       return request(app)
         .patch(`/api/articles/${articleId}`)
         .send(newVotes)
-        .expect(200)
+        .expect(201)
         .then(({ body }) => {
           expect(body.msg.votes).toBe(data.articleData[0].votes + 1);
         });
     });
-    test('PATCH: 200 - Updates the votes count amount when passed negative inc_votes', () => {
+    test('PATCH: 201 - Updates the votes count amount when passed negative inc_votes', () => {
       const articleId = 1;
       const newVotes = { inc_votes: -10 };
       return request(app)
         .patch(`/api/articles/${articleId}`)
         .send(newVotes)
-        .expect(200)
+        .expect(201)
         .then(({ body }) => {
           expect(body.msg.votes).toBe(data.articleData[0].votes - 10);
         });
@@ -132,13 +132,13 @@ describe('/api/articles/:article_id', () => {
           expect(body.msg).toBe('Bad request');
         });
     });
-    test('PATCH: 200 - Responds with the correct updated article when the user updates the votes', () => {
+    test('PATCH: 201 - Responds with the correct updated article when the user updates the votes', () => {
       const articleId = 1;
       const newVotes = { inc_votes: 1 };
       return request(app)
         .patch(`/api/articles/${articleId}`)
         .send(newVotes)
-        .expect(200)
+        .expect(201)
         .then(({ body }) => {
           expect(body.msg).toMatchObject({
             article_id: expect.any(Number),
@@ -323,5 +323,11 @@ describe('/api/articles/:article_id/comments', () => {
           expect(body.msg).toBe('Bad request');
         });
     });
+  });
+});
+
+describe('/api/comments/:comment_id', () => {
+  test('', () => {
+    
   });
 });

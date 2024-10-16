@@ -99,6 +99,39 @@ describe('/api/articles/:article_id', () => {
           expect(body.msg.votes).toBe(data.articleData[0].votes + 1);
         });
     });
+    test('PATCH: 200 - Updates the votes count amount when passed negative inc_votes', () => {
+      const articleId = 1
+      const newVotes = {inc_votes: -10};
+      return request(app)
+        .patch(`/api/articles/${articleId}`)
+        .send(newVotes)
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.msg.votes).toBe(data.articleData[0].votes - 10);
+        });
+    });
+    test('PATCH: 400 - Responds with 400 Bad request when given an empty body', () => {
+      const articleId = 1
+      const newVotes = {};
+      return request(app)
+        .patch(`/api/articles/${articleId}`)
+        .send(newVotes)
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Bad request");
+        });
+    });
+    test('PATCH: 400 - Responds with 400 Bad request when given a valid body but invalid input', () => {
+      const articleId = 1
+      const newVotes = {inc_votes: ["not-a-number"]};
+      return request(app)
+        .patch(`/api/articles/${articleId}`)
+        .send(newVotes)
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Bad request");
+        });
+    });
   });
 });
 

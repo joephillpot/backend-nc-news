@@ -60,6 +60,13 @@ exports.insertArticleComment = (article_id, author, body) => {
 };
 
 exports.updateArticleVotes = (article_id, inc_votes) => {
+  const isVotesEmpty = (inc_votes) => {
+    return JSON.stringify(inc_votes) === '{}'
+  }
+  
+  if(isVotesEmpty(inc_votes) || typeof inc_votes !== 'number'){
+    return Promise.reject({status: 400, msg: "Bad request"})
+  }
   return db
     .query(
       `UPDATE articles

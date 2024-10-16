@@ -359,12 +359,29 @@ describe('/api/comments/:comment_id', () => {
       });
   });
   test('DELETE: 400 - Returns 400 if given a non valid input', () => {
-    const nonValidCommentId = "not-a-number";
+    const nonValidCommentId = 'not-a-number';
     return request(app)
       .delete(`/api/comments/${nonValidCommentId}`)
       .expect(400)
       .then(({ body }) => {
         expect(body.msg).toBe('Bad request');
+      });
+  });
+});
+
+describe('/api/users', () => {
+  test('GET: 200 - Responds with an array of users with username, name, avatar_url properties', () => {
+    return request(app)
+      .get('/api/users')
+      .expect(200)
+      .then(({ body: { users } }) => {
+        users.forEach((user)=> {
+          expect(user).toMatchObject({
+            username: expect.any(String),
+            name: expect.any(String),
+            avatar_url: expect.any(String)
+          })
+        })
       });
   });
 });

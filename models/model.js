@@ -1,4 +1,5 @@
 const db = require('../db/connection');
+const articles = require('../db/data/test-data/articles');
 
 exports.fetchTopics = () => {
   return db.query(`SELECT * FROM topics`).then(({ rows }) => {
@@ -6,20 +7,54 @@ exports.fetchTopics = () => {
   });
 };
 
-exports.fetchArticles = () => {
-  return db
-    .query(
-      `SELECT articles.author, articles.title, articles.article_id, articles.topic, articles.created_at, articles.votes, articles.article_img_url, 
+exports.fetchArticles = (sort_by = 'created_at', order = 'DESC', topic) => {
+  const validSortQueries = ['article_id', 'author', 'title', 'topic', 'created_at', 'votes', 'comment_count'];
+  const validOrderQueries = ['ASC', 'DESC'];
+
+  if (validSortQueries.includes(sort_by) === false) {
+    return Promise.reject({ status: 400, msg: 'Bad request' });
+  }
+
+  if (validOrderQueries.includes(order.toUpperCase()) === false) {
+    return Promise.reject({ status: 400, msg: 'Bad request' });
+  }
+
+  let queryString = `
+    SELECT articles.*, 
     COUNT(comments.article_id) :: INT
     AS comment_count
     FROM articles
-    LEFT JOIN comments ON articles.article_id = comments.article_id
-    GROUP BY articles.article_id
-    ORDER BY created_at DESC`
-    )
-    .then(({ rows }) => {
-      return rows;
+    LEFT JOIN comments ON articles.article_id = comments.article_id `;
+
+  const promises = [];
+  const queryValues = [];
+
+  if (topic) {
+    queryString += `WHERE topic = $1 `;
+    queryValues.push(topic);
+    promises.push(db.query(`SELECT * FROM topics WHERE slug = $1`, [topic]));
+  }
+
+  queryString += `GROUP BY articles.article_id `;
+
+  if (sort_by === 'comment_count') {
+    queryString += `ORDER BY comment_count ${order}`;
+  } else {
+    queryString += `ORDER BY articles.${sort_by} ${order}`;
+  }
+
+  promises.unshift(db.query(queryString, queryValues));
+
+  return Promise.all(promises).then((results) => {
+    const articles = results[0].rows;
+    if (articles.length === 0 && topic && results[1].rows.length === 0) {
+      return Promise.reject({ status: 404, msg: 'Not found' });
+    }
+    articles.forEach((article) => {
+      delete article.body;
     });
+    return articles;
+  });
 };
 
 exports.fetchArticleById = (article_id) => {
@@ -89,14 +124,14 @@ exports.deleteCommentById = (comment_id) => {
       [comment_id]
     )
     .then((result) => {
-      if(result.rowCount === 0) {
-        return Promise.reject({status: 404, msg: 'Not found'})
+      if (result.rowCount === 0) {
+        return Promise.reject({ status: 404, msg: 'Not found' });
       }
     });
 };
 
 exports.fetchUsers = () => {
-  return db.query(`SELECT * FROM users`).then(({rows})=>{
+  return db.query(`SELECT * FROM users`).then(({ rows }) => {
     return rows;
-  })
-}
+  });
+};

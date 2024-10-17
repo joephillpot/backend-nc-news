@@ -67,6 +67,7 @@ describe('/api/articles/:article_id', () => {
           votes: expect.any(Number),
           article_img_url: expect.any(String),
           body: expect.any(String),
+          comment_count: expect.any(Number)
         });
       });
   });

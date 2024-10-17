@@ -289,7 +289,7 @@ describe('/api/articles', () => {
         .get('/api/articles?order=asc')
         .expect(200)
         .then(({ body: { articles } }) => {
-          expect(articles).toBeSortedBy('created_at', { ascending: true });
+          expect(articles).toBeSortedBy('created_at', { descending: false });
         });
     });
     test('GET: 200 - Sorts by ASC order when given and order query of ASC', () => {
@@ -297,7 +297,7 @@ describe('/api/articles', () => {
         .get('/api/articles?order=ASC')
         .expect(200)
         .then(({ body: { articles } }) => {
-          expect(articles).toBeSortedBy('created_at', { ascending: true });
+          expect(articles).toBeSortedBy('created_at', { descending: false });
         });
     });
     test('GET: 200 - Sorts by ASC order when given and order query of AsC', () => {
@@ -305,7 +305,7 @@ describe('/api/articles', () => {
         .get('/api/articles?order=AsC')
         .expect(200)
         .then(({ body: { articles } }) => {
-          expect(articles).toBeSortedBy('created_at', { ascending: true });
+          expect(articles).toBeSortedBy('created_at', { descending: false });
         });
     });
     test('GET: 200 - Sorts by ASC order when given a sort_by query', () => {
@@ -313,7 +313,7 @@ describe('/api/articles', () => {
         .get('/api/articles?sort_by=article_id&order=asc')
         .expect(200)
         .then(({ body: { articles } }) => {
-          expect(articles).toBeSortedBy('article_id', { ascending: true });
+          expect(articles).toBeSortedBy('article_id', { descending: false });
         });
     });
     test('GET: 400 - Responds with 400 if not a valid order query', () => {

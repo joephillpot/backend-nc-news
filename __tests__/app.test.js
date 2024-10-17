@@ -91,23 +91,25 @@ describe('/api/articles/:article_id', () => {
     test('PATCH: 201 - Updates the votes count amount when passed positive inc_votes', () => {
       const articleId = 1;
       const newVotes = { inc_votes: 1 };
+      const newVoteCount = data.articleData[0].votes + 1;
       return request(app)
         .patch(`/api/articles/${articleId}`)
         .send(newVotes)
         .expect(201)
         .then(({ body }) => {
-          expect(body.msg.votes).toBe(data.articleData[0].votes + 1);
+          expect(body.msg.votes).toBe(newVoteCount);
         });
     });
     test('PATCH: 201 - Updates the votes count amount when passed negative inc_votes', () => {
       const articleId = 1;
       const newVotes = { inc_votes: -10 };
+      const newVoteCount = data.articleData[0].votes - 10;
       return request(app)
         .patch(`/api/articles/${articleId}`)
         .send(newVotes)
         .expect(201)
         .then(({ body }) => {
-          expect(body.msg.votes).toBe(data.articleData[0].votes - 10);
+          expect(body.msg.votes).toBe(newVoteCount);
         });
     });
     test('PATCH: 400 - Responds with 400 Bad request when given an empty body', () => {
@@ -135,6 +137,36 @@ describe('/api/articles/:article_id', () => {
     test('PATCH: 201 - Responds with the correct updated article when the user updates the votes', () => {
       const articleId = 1;
       const newVotes = { inc_votes: 1 };
+      return request(app)
+        .patch(`/api/articles/${articleId}`)
+        .send(newVotes)
+        .expect(201)
+        .then(({ body }) => {
+          expect(body.msg).toMatchObject({
+            article_id: expect.any(Number),
+            title: expect.any(String),
+            author: expect.any(String),
+            topic: expect.any(String),
+            created_at: expect.any(String),
+            votes: expect.any(Number),
+            article_img_url: expect.any(String),
+          });
+        });
+    });
+    test('PATCH: 404 - Responds with 404 when article does not exist', () => {
+      const articleId = 4096;
+      const newVotes = { inc_votes: 1 };
+      return request(app)
+        .patch(`/api/articles/${articleId}`)
+        .send(newVotes)
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Not found")
+        });
+    });
+    test('PATCH: 201 - Responds with the correct updated article when given additional keys', () => {
+      const articleId = 1;
+      const newVotes = { inc_votes: 10, random_key: 5 };
       return request(app)
         .patch(`/api/articles/${articleId}`)
         .send(newVotes)
@@ -375,6 +407,7 @@ describe('/api/users', () => {
       .get('/api/users')
       .expect(200)
       .then(({ body: { users } }) => {
+        expect(users).toHaveLength(4)
         users.forEach((user)=> {
           expect(user).toMatchObject({
             username: expect.any(String),

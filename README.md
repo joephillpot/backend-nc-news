@@ -62,7 +62,7 @@ npm test
 ```
 Alternatively, you can run tests individually:
 - For utility tests: `npm test utils`
-- For server tests: `npm test server`
+- For app tests: `npm test app`
 
 ### Creating Environment Files
 

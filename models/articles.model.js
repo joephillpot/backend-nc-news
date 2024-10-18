@@ -1,11 +1,4 @@
-const db = require('../db/connection');
-const articles = require('../db/data/test-data/articles');
-
-exports.fetchTopics = () => {
-  return db.query(`SELECT * FROM topics`).then(({ rows }) => {
-    return rows;
-  });
-};
+const db = require("../db/connection")
 
 exports.fetchArticles = (sort_by = 'created_at', order = 'DESC', topic) => {
   const validSortQueries = ['article_id', 'author', 'title', 'topic', 'created_at', 'votes', 'comment_count'];
@@ -79,34 +72,6 @@ exports.fetchArticleById = (article_id) => {
     });
 };
 
-exports.fetchArticleComments = (article_id) => {
-  return db
-    .query(
-      `SELECT * FROM comments
-      WHERE article_id = $1
-      ORDER BY created_at DESC`,
-      [article_id]
-    )
-    .then(({ rows }) => {
-      return rows;
-    });
-};
-
-exports.insertArticleComment = (article_id, author, body) => {
-  if (!author || !body) {
-    return Promise.reject({ status: 400, msg: 'Missing required fields' });
-  }
-  return db
-    .query(
-      `INSERT INTO comments (article_id, author, body)
-    VALUES ($1, $2, $3) RETURNING *`,
-      [article_id, author, body]
-    )
-    .then(({ rows }) => {
-      return rows[0];
-    });
-};
-
 exports.updateArticleVotes = (article_id, inc_votes) => {
   const isVotesEmpty = (inc_votes) => {
     return JSON.stringify(inc_votes) === '{}';
@@ -126,25 +91,4 @@ exports.updateArticleVotes = (article_id, inc_votes) => {
     .then(({ rows }) => {
       return rows[0];
     });
-};
-
-exports.deleteCommentById = (comment_id) => {
-  return db
-    .query(
-      `DELETE
-    FROM comments
-    WHERE comment_id = $1`,
-      [comment_id]
-    )
-    .then((result) => {
-      if (result.rowCount === 0) {
-        return Promise.reject({ status: 404, msg: 'Not found' });
-      }
-    });
-};
-
-exports.fetchUsers = () => {
-  return db.query(`SELECT * FROM users`).then(({ rows }) => {
-    return rows;
-  });
 };

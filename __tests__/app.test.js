@@ -67,7 +67,7 @@ describe('/api/articles/:article_id', () => {
           votes: expect.any(Number),
           article_img_url: expect.any(String),
           body: expect.any(String),
-          comment_count: expect.any(Number)
+          comment_count: expect.any(Number),
         });
       });
   });
@@ -359,7 +359,7 @@ describe('/api/articles', () => {
         .get('/api/articles?topic=not-a-topic')
         .expect(404)
         .then(({ body }) => {
-          expect(body.msg).toBe("Not found");
+          expect(body.msg).toBe('Not found');
         });
     });
   });
@@ -569,6 +569,29 @@ describe('/api/users', () => {
             avatar_url: expect.any(String),
           });
         });
+      });
+  });
+});
+
+describe('/api/users/:username', () => {
+  test('GET: 200 - Responds with correct user when given a valid username', () => {
+    return request(app)
+      .get('/api/users/butter_bridge')
+      .expect(200)
+      .then(({ body: { user } }) => {
+        expect(user).toMatchObject({
+          username: expect.any(String),
+          name: expect.any(String),
+          avatar_url: expect.any(String)
+        })
+      });
+  });
+  test('GET: 404 - Responds with not found when given a username that is not present', () => {
+    return request(app)
+      .get('/api/users/not_a_user')
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Not found")
       });
   });
 });

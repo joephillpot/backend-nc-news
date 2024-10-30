@@ -69,6 +69,17 @@
       }]
     }
   },
+  "GET /api/users/:username": {
+    "description": "gets a user by their username",
+    "exampleResponse": {
+      "user": {
+        "username": "usernamehere",
+        "name": "namehere",
+        "avatar_url":
+          "https://www.link-to-avatar-url.com"
+      }
+    }
+  },
   "POST /api/articles/:article_id/comments": {
     "description": "posts a new comment to an article",
     "queries": [],

@@ -492,10 +492,10 @@ describe('/api/articles/:article_id/comments', () => {
         .send(newComment)
         .expect(400)
         .then(({ body }) => {
-          expect(body.msg).toBe('Missing required fields');
+          expect(body.msg).toBe('Bad request');
         });
     });
-    test('POST: 404 - Responds with 404 when username does not exist', () => {
+    test('POST: 400 - Responds with 404 when username does not exist', () => {
       const articleId = 2;
       const newComment = {
         body: 'test comment body',
@@ -552,6 +552,71 @@ describe('/api/comments/:comment_id', () => {
       .then(({ body }) => {
         expect(body.msg).toBe('Bad request');
       });
+  });
+  describe('PATCH', () => {
+    test('PATCH: 200 - Increments the vote count of a comment', () => {
+      return request(app)
+      .patch("/api/comments/1")
+      .send({inc_votes: 1})
+      .expect(200)
+      .then(({body: {updatedComment}})=> {
+        expect(updatedComment.votes).toBe(17)
+      })
+    });
+    test('PATCH: 200 - Negatively increments the vote count of a comment', () => {
+      return request(app)
+      .patch("/api/comments/1")
+      .send({inc_votes: -1})
+      .expect(200)
+      .then(({body: {updatedComment}})=> {
+        expect(updatedComment.votes).toBe(15)
+      })
+    });
+    test('PATCH: 200 - Ignores any other keys being sent on the object', () => {
+      return request(app)
+      .patch("/api/comments/1")
+      .send({inc_votes: 1, randomKey: 100})
+      .expect(200)
+      .then(({body: {updatedComment}})=> {
+        expect(updatedComment.votes).toBe(17)
+      })
+    });
+    test('PATCH: 400 - Responds with Bad request if not given inc_votes', () => {
+      return request(app)
+      .patch("/api/comments/1")
+      .send({})
+      .expect(400)
+      .then(({body})=> {
+        expect(body.msg).toBe("Bad request")
+      })
+    });
+    test('PATCH: 400 - Responds with Bad request if inc_votes is not valid', () => {
+      return request(app)
+      .patch("/api/comments/1")
+      .send({inc_votes: 'not_a_number'})
+      .expect(400)
+      .then(({body})=> {
+        expect(body.msg).toBe("Bad request")
+      })
+    });
+    test('PATCH: 400 - Responds with Bad request if commend_id is invalid', () => {
+      return request(app)
+      .patch("/api/comments/not_a_number")
+      .send({inc_votes: 1})
+      .expect(400)
+      .then(({body})=> {
+        expect(body.msg).toBe("Bad request")
+      })
+    });
+    test('PATCH: 404 - Responds with Not found if comment_id does not exist', () => {
+      return request(app)
+      .patch("/api/comments/4096")
+      .send({inc_votes: 1})
+      .expect(404)
+      .then(({body})=> {
+        expect(body.msg).toBe("Not found")
+      })
+    });
   });
 });
 

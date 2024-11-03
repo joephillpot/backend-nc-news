@@ -1,4 +1,6 @@
-const {fetchArticles, fetchArticleById, updateArticleVotes} = require("../models/articles.model")
+const { fetchArticles, fetchArticleById, updateArticleVotes, insertNewArticle } = require('../models/articles.model');
+const { fetchUserByUsername } = require('../models/users.model');
+const { fetchTopics } = require('../models/topics.model');
 
 exports.getArticles = (req, res, next) => {
   const { sort_by, order, topic } = req.query;
@@ -31,6 +33,28 @@ exports.patchArticleVotes = (req, res, next) => {
     .then((results) => {
       const newVote = results[1];
       res.status(201).send({ msg: newVote });
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
+exports.postNewArticle = (req, res, next) => {
+  const { author, title, body, topic, article_img_url } = req.body;
+
+  if (!author || !title || !body || !topic) {
+    next({ status: 400, msg: 'Bad request' });
+  }
+
+  articleElementChecker = [
+    fetchUserByUsername(author),
+    fetchTopics(topic),
+    insertNewArticle(author, title, body, topic, article_img_url),
+  ];
+  
+  Promise.all(articleElementChecker)
+    .then((results) => {
+      res.status(201).send({ postedArticle: results[2] });
     })
     .catch((err) => {
       next(err);

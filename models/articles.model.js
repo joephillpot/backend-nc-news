@@ -1,4 +1,4 @@
-const db = require("../db/connection")
+const db = require('../db/connection');
 
 exports.fetchArticles = (sort_by = 'created_at', order = 'DESC', topic) => {
   const validSortQueries = ['article_id', 'author', 'title', 'topic', 'created_at', 'votes', 'comment_count'];
@@ -88,6 +88,33 @@ exports.updateArticleVotes = (article_id, inc_votes) => {
     RETURNING *`,
       [article_id, inc_votes]
     )
+    .then(({ rows }) => {
+      return rows[0];
+    });
+};
+
+exports.insertNewArticle = (author, title, body, topic, article_img_url) => {
+  const queryVals = [author, title, body, topic];
+  let queryString = `INSERT into articles (author, title, body, topic`;
+
+  if (article_img_url) {
+    queryVals.push(article_img_url);
+    queryString += `, article_img_url) VALUES ($1, $2, $3, $4, $5) RETURNING article_id`;
+  } else {
+    queryString += `) VALUES ($1, $2, $3, $4) RETURNING article_id`;
+  }
+  return db
+    .query(queryString, queryVals)
+    .then(({ rows }) => {
+      const { article_id } = rows[0];
+
+      return db.query(
+        `SELECT articles.author, articles.title, articles.article_id, articles.topic, articles.created_at, articles.votes, articles.article_img_url, articles.body, CAST(COUNT(comments.body) AS INTEGER) AS comment_count FROM articles 
+        LEFT OUTER JOIN comments ON articles.article_id = comments.article_id WHERE articles.article_id = $1
+        GROUP BY articles.article_id`,
+        [article_id]
+      );
+    })
     .then(({ rows }) => {
       return rows[0];
     });

@@ -59,14 +59,16 @@
     "description": "gets all comments from an article",
     "queries": [],
     "exampleResponse": {
-      "comments": [{
-        "comment_id": 1,
-        "body": "main body of comment",
-        "article_id": 1,
-        "author": "authors username",
-        "votes": 0,
-        "created_at": "2020-01-01T03:08:00.000Z"
-      }]
+      "comments": [
+        {
+          "comment_id": 1,
+          "body": "main body of comment",
+          "article_id": 1,
+          "author": "authors username",
+          "votes": 0,
+          "created_at": "2020-01-01T03:08:00.000Z"
+        }
+      ]
     }
   },
   "GET /api/users/:username": {
@@ -75,14 +77,12 @@
       "user": {
         "username": "usernamehere",
         "name": "namehere",
-        "avatar_url":
-          "https://www.link-to-avatar-url.com"
+        "avatar_url": "https://www.link-to-avatar-url.com"
       }
     }
   },
   "POST /api/articles/:article_id/comments": {
     "description": "posts a new comment to an article",
-    "queries": [],
     "exampleRequest": {
       "author": "insert-username",
       "body": "some sort of comment"
@@ -92,6 +92,17 @@
         "author": "insert-username",
         "body": "some sort of comment"
       }
+    }
+  },
+  "POST /api/articles": {
+    "description": "posts a new article",
+    "exampleRequestBody": {
+      "title": "some sort of title here",
+      "topic": "a topic name",
+      "author": "authors username",
+      "body": "main body of text",
+      "created_at": "2020-10-16T05:03:00.000Z",
+      "article_img_url": "https://www.link-to-artilcle-img.com"
     }
   },
   "PATCH /api/articles/:article_id": {
@@ -107,7 +118,7 @@
         "article_id": 1,
         "body": "main body of text",
         "topic": "a topic name",
-        "created_at":"2017-03-11 12:21:54.171+00",
+        "created_at": "2017-03-11 12:21:54.171+00",
         "votes": 2,
         "comment_count": 389
       }

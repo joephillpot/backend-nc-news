@@ -363,6 +363,143 @@ describe('/api/articles', () => {
         });
     });
   });
+  describe('POST', () => {
+    test('POST: 201 - Posts the article and returns an object of the article with the correct keys', () => {
+      return request(app)
+        .post('/api/articles')
+        .send({
+          author: 'butter_bridge',
+          title: 'Test title',
+          body: 'Test body',
+          topic: 'paper',
+          article_img_url: 'https://www.pexels.com/photo/close-up-photo-of-programming-of-codes-546819/',
+        })
+        .expect(201)
+        .then(({ body: { postedArticle } }) => {
+          expect(postedArticle).toMatchObject({
+            author: 'butter_bridge',
+            title: 'Test title',
+            body: 'Test body',
+            topic: 'paper',
+            article_img_url: 'https://www.pexels.com/photo/close-up-photo-of-programming-of-codes-546819/',
+            article_id: expect.any(Number),
+            votes: 0,
+            created_at: expect.any(String),
+            comment_count: 0,
+          });
+        });
+    });
+    test('POST: 201 - Posts the article and returns an object of the article with the correct keys and a default property for article_img_url when one is not provided', () => {
+      return request(app)
+        .post('/api/articles')
+        .send({
+          author: 'butter_bridge',
+          title: 'Test title',
+          body: 'Test body',
+          topic: 'paper',
+        })
+        .expect(201)
+        .then(({ body: { postedArticle } }) => {
+          expect(postedArticle).toMatchObject({
+            author: 'butter_bridge',
+            title: 'Test title',
+            body: 'Test body',
+            topic: 'paper',
+            article_img_url: 'https://images.pexels.com/photos/97050/pexels-photo-97050.jpeg?w=700&h=700',
+            article_id: expect.any(Number),
+            votes: 0,
+            created_at: expect.any(String),
+            comment_count: 0,
+          });
+        });
+    });
+    test('POST: 404 - Responds with Not found when the username does not exist in users', () => {
+      return request(app)
+        .post('/api/articles')
+        .send({
+          author: 'not_a_user',
+          title: 'Test title',
+          body: 'Test body',
+          topic: 'paper',
+          article_img_url: 'https://www.pexels.com/photo/close-up-photo-of-programming-of-codes-546819/',
+        })
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Not found")
+        });
+    });
+    test('POST: 404 - Responds with Not found when the topic does not exist in topics', () => {
+      return request(app)
+        .post('/api/articles')
+        .send({
+          author: 'butter_bridge',
+          title: 'Test title',
+          body: 'Test body',
+          topic: 'not_a_topic',
+          article_img_url: 'https://www.pexels.com/photo/close-up-photo-of-programming-of-codes-546819/',
+        })
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Not found")
+        });
+    });
+    test('POST: 400 - Responds with Bad request when not given an author key', () => {
+      return request(app)
+        .post('/api/articles')
+        .send({
+          title: 'Test title',
+          body: 'Test body',
+          topic: 'not_a_topic',
+          article_img_url: 'https://www.pexels.com/photo/close-up-photo-of-programming-of-codes-546819/',
+        })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Bad request")
+        });
+    });
+    test('POST: 400 - Responds with Bad request when not given a title key', () => {
+      return request(app)
+        .post('/api/articles')
+        .send({
+          author: 'butter_bridge',
+          body: 'Test body',
+          topic: 'not_a_topic',
+          article_img_url: 'https://www.pexels.com/photo/close-up-photo-of-programming-of-codes-546819/',
+        })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Bad request")
+        });
+    });
+    test('POST: 400 - Responds with Bad request when not given a body key', () => {
+      return request(app)
+        .post('/api/articles')
+        .send({
+          author: 'butter_bridge',
+          title: 'Test title',
+          topic: 'not_a_topic',
+          article_img_url: 'https://www.pexels.com/photo/close-up-photo-of-programming-of-codes-546819/',
+        })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Bad request")
+        });
+    });
+    test('POST: 400 - Responds with Bad request when not given a topic key', () => {
+      return request(app)
+        .post('/api/articles')
+        .send({
+          author: 'butter_bridge',
+          title: 'Test title',
+          body: 'Test body',
+          article_img_url: 'https://www.pexels.com/photo/close-up-photo-of-programming-of-codes-546819/',
+        })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Bad request")
+        });
+    });
+  });
 });
 
 describe('/api/articles/:article_id/comments', () => {
@@ -495,7 +632,7 @@ describe('/api/articles/:article_id/comments', () => {
           expect(body.msg).toBe('Bad request');
         });
     });
-    test('POST: 400 - Responds with 404 when username does not exist', () => {
+    test('POST: 404 - Responds with 404 when username does not exist', () => {
       const articleId = 2;
       const newComment = {
         body: 'test comment body',
@@ -504,9 +641,9 @@ describe('/api/articles/:article_id/comments', () => {
       return request(app)
         .post(`/api/articles/${articleId}/comments`)
         .send(newComment)
-        .expect(400)
+        .expect(404)
         .then(({ body }) => {
-          expect(body.msg).toBe('Bad request');
+          expect(body.msg).toBe('Not found');
         });
     });
   });
@@ -556,66 +693,66 @@ describe('/api/comments/:comment_id', () => {
   describe('PATCH', () => {
     test('PATCH: 200 - Increments the vote count of a comment', () => {
       return request(app)
-      .patch("/api/comments/1")
-      .send({inc_votes: 1})
-      .expect(200)
-      .then(({body: {updatedComment}})=> {
-        expect(updatedComment.votes).toBe(17)
-      })
+        .patch('/api/comments/1')
+        .send({ inc_votes: 1 })
+        .expect(200)
+        .then(({ body: { updatedComment } }) => {
+          expect(updatedComment.votes).toBe(17);
+        });
     });
     test('PATCH: 200 - Negatively increments the vote count of a comment', () => {
       return request(app)
-      .patch("/api/comments/1")
-      .send({inc_votes: -1})
-      .expect(200)
-      .then(({body: {updatedComment}})=> {
-        expect(updatedComment.votes).toBe(15)
-      })
+        .patch('/api/comments/1')
+        .send({ inc_votes: -1 })
+        .expect(200)
+        .then(({ body: { updatedComment } }) => {
+          expect(updatedComment.votes).toBe(15);
+        });
     });
     test('PATCH: 200 - Ignores any other keys being sent on the object', () => {
       return request(app)
-      .patch("/api/comments/1")
-      .send({inc_votes: 1, randomKey: 100})
-      .expect(200)
-      .then(({body: {updatedComment}})=> {
-        expect(updatedComment.votes).toBe(17)
-      })
+        .patch('/api/comments/1')
+        .send({ inc_votes: 1, randomKey: 100 })
+        .expect(200)
+        .then(({ body: { updatedComment } }) => {
+          expect(updatedComment.votes).toBe(17);
+        });
     });
     test('PATCH: 400 - Responds with Bad request if not given inc_votes', () => {
       return request(app)
-      .patch("/api/comments/1")
-      .send({})
-      .expect(400)
-      .then(({body})=> {
-        expect(body.msg).toBe("Bad request")
-      })
+        .patch('/api/comments/1')
+        .send({})
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe('Bad request');
+        });
     });
     test('PATCH: 400 - Responds with Bad request if inc_votes is not valid', () => {
       return request(app)
-      .patch("/api/comments/1")
-      .send({inc_votes: 'not_a_number'})
-      .expect(400)
-      .then(({body})=> {
-        expect(body.msg).toBe("Bad request")
-      })
+        .patch('/api/comments/1')
+        .send({ inc_votes: 'not_a_number' })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe('Bad request');
+        });
     });
     test('PATCH: 400 - Responds with Bad request if commend_id is invalid', () => {
       return request(app)
-      .patch("/api/comments/not_a_number")
-      .send({inc_votes: 1})
-      .expect(400)
-      .then(({body})=> {
-        expect(body.msg).toBe("Bad request")
-      })
+        .patch('/api/comments/not_a_number')
+        .send({ inc_votes: 1 })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe('Bad request');
+        });
     });
     test('PATCH: 404 - Responds with Not found if comment_id does not exist', () => {
       return request(app)
-      .patch("/api/comments/4096")
-      .send({inc_votes: 1})
-      .expect(404)
-      .then(({body})=> {
-        expect(body.msg).toBe("Not found")
-      })
+        .patch('/api/comments/4096')
+        .send({ inc_votes: 1 })
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).toBe('Not found');
+        });
     });
   });
 });
@@ -647,8 +784,8 @@ describe('/api/users/:username', () => {
         expect(user).toMatchObject({
           username: expect.any(String),
           name: expect.any(String),
-          avatar_url: expect.any(String)
-        })
+          avatar_url: expect.any(String),
+        });
       });
   });
   test('GET: 404 - Responds with not found when given a username that is not present', () => {
@@ -656,7 +793,7 @@ describe('/api/users/:username', () => {
       .get('/api/users/not_a_user')
       .expect(404)
       .then(({ body }) => {
-        expect(body.msg).toBe("Not found")
+        expect(body.msg).toBe('Not found');
       });
   });
 });

@@ -5,8 +5,10 @@ const users = require('./routers/users.router');
 const endpoints = require('./routers/endpoints.router');
 const comments = require('./routers/comments.router');
 const { handleCustomErrors, handleServerErrors, handlePSQLErrors, invalidEndpoint } = require('./errors');
+const cors = require('cors');
 const app = express();
 
+app.use(cors());
 app.use(express.json());
 
 app.use('/api', endpoints);

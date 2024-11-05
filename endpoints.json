@@ -105,6 +105,13 @@
       "article_img_url": "https://www.link-to-artilcle-img.com"
     }
   },
+  "POST /api/topics": {
+    "description": "posts a new topic",
+    "exampleRequestBody": {
+      "description": "topic description here",
+      "slug": "topic slug"
+    }
+  },
   "PATCH /api/articles/:article_id": {
     "description": "updates votes on the given article",
     "queries": [],

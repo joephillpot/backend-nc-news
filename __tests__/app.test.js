@@ -39,6 +39,51 @@ describe('/api/topics', () => {
         });
       });
   });
+  describe('POST', () => {
+    test('POST: 200 - Posts a topic and returns the posted topic', () => {
+      return request(app)
+        .post('/api/topics')
+        .send({ description: 'Test description', slug: 'Test topic' })
+        .expect(201)
+        .then(({ body: { topic } }) => {
+          expect(topic).toMatchObject({
+            description: 'Test description',
+            slug: 'Test topic',
+          });
+        });
+    });
+    test('POST: 200 - Posts a topic and returns the posted topic ignoring extra properties', () => {
+      return request(app)
+        .post('/api/topics')
+        .send({ description: 'Test description', slug: 'Test topic', randomKey: "Random value" })
+        .expect(201)
+        .then(({ body: { topic } }) => {
+          expect(topic).toMatchObject({
+            description: 'Test description',
+            slug: 'Test topic',
+          });
+          expect(topic).not.toHaveProperty("randomKey")
+        });
+    });
+    test('POST: 400 - Responds with Bad request when not given a description', () => {
+      return request(app)
+        .post('/api/topics')
+        .send({ slug: 'Test topic' })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Bad request")
+        });
+    });
+    test('POST: 400 - Responds with Bad request when not given a slug', () => {
+      return request(app)
+        .post('/api/topics')
+        .send({ description: 'Test description' })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Bad request")
+        });
+    });
+  });
 });
 
 describe('/api', () => {
@@ -425,7 +470,7 @@ describe('/api/articles', () => {
         })
         .expect(404)
         .then(({ body }) => {
-          expect(body.msg).toBe("Not found")
+          expect(body.msg).toBe('Not found');
         });
     });
     test('POST: 404 - Responds with Not found when the topic does not exist in topics', () => {
@@ -440,7 +485,7 @@ describe('/api/articles', () => {
         })
         .expect(404)
         .then(({ body }) => {
-          expect(body.msg).toBe("Not found")
+          expect(body.msg).toBe('Not found');
         });
     });
     test('POST: 400 - Responds with Bad request when not given an author key', () => {
@@ -454,7 +499,7 @@ describe('/api/articles', () => {
         })
         .expect(400)
         .then(({ body }) => {
-          expect(body.msg).toBe("Bad request")
+          expect(body.msg).toBe('Bad request');
         });
     });
     test('POST: 400 - Responds with Bad request when not given a title key', () => {
@@ -468,7 +513,7 @@ describe('/api/articles', () => {
         })
         .expect(400)
         .then(({ body }) => {
-          expect(body.msg).toBe("Bad request")
+          expect(body.msg).toBe('Bad request');
         });
     });
     test('POST: 400 - Responds with Bad request when not given a body key', () => {
@@ -482,7 +527,7 @@ describe('/api/articles', () => {
         })
         .expect(400)
         .then(({ body }) => {
-          expect(body.msg).toBe("Bad request")
+          expect(body.msg).toBe('Bad request');
         });
     });
     test('POST: 400 - Responds with Bad request when not given a topic key', () => {
@@ -496,7 +541,67 @@ describe('/api/articles', () => {
         })
         .expect(400)
         .then(({ body }) => {
-          expect(body.msg).toBe("Bad request")
+          expect(body.msg).toBe('Bad request');
+        });
+    });
+  });
+  describe.skip('Pagination Tests', () => {
+    test('GET: 200 - Responds with the correct number of articles, in the correct order, when given a limit', () => {
+      return request(app)
+        .get('/api/articles?limit=5')
+        .expect(200)
+        .then(({ body: { articles } }) => {
+          expect(articles.length).toBe(5);
+          articles.forEach((article) => {
+            expect(article).toMatchObject({
+              article_id: expect.any(Number),
+              title: expect.any(String),
+              author: expect.any(String),
+              topic: expect.any(String),
+              created_at: expect.any(String),
+              votes: expect.any(Number),
+              article_img_url: expect.any(String),
+              comment_count: expect.any(Number),
+            });
+          });
+        });
+    });
+    test('GET: 200 - Responds with the correct number of articles, from the correct position, when given a page number', () => {
+      return request(app)
+        .get('/api/articles?&p=2')
+        .expect(200)
+        .then(({ body: { articles } }) => {
+          expect(articles.length).toBe(3);
+          return Promise.all([articles, db.query(`SELECT * FROM articles ORDER BY created_at DESC`)]);
+        })
+        .then(([articles, data]) => {
+          data.rows.slice(5, 10).forEach((article, index) => {
+            expect(article.article_id).toEqual(articles[index].article_id);
+          });
+        });
+    });
+    test('GET: 200 - Responds with an empty array when the page number exceeds the number of pages', () => {
+      return request(app)
+        .get('/api/articles?&p=3')
+        .expect(200)
+        .then(({ body: { articles } }) => {
+          expect(articles.length).toBe(3);
+        });
+    });
+    test('GET: 400 - Responds with Bad request when given an invalid limit', () => {
+      return request(app)
+        .get('/api/articles?limit=invalid_limit')
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe('Bad request');
+        });
+    });
+    test('GET: 400 - Responds with Bad request when given an invalid page number', () => {
+      return request(app)
+        .get('/api/articles?limit=invalid_page_number')
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe('Bad request');
         });
     });
   });
@@ -644,6 +749,74 @@ describe('/api/articles/:article_id/comments', () => {
         .expect(404)
         .then(({ body }) => {
           expect(body.msg).toBe('Not found');
+        });
+    });
+    describe('Pagination Tests', () => {
+      test('Responds with Bad request if comment_id is not valid', () => {
+        return request(app).get('/api');
+      });
+    });
+  });
+  describe.skip('Pagination Tests', () => {
+    test('GET: 200 - Responds with the correct number of comments, when given a valid limit', () => {
+      return request(app)
+        .get('/api/articles/1/comments?limit=5')
+        .expect(200)
+        .then(({ body: { comments } }) => {
+          expect(comments.length).toBe(5);
+          expect(comments).toBeSortedBy('created_at', { descending: true });
+          comments.forEach((comment) => {
+            expect(comment).toMatchObject({
+              comment_id: expect.any(Number),
+              votes: expect.any(Number),
+              created_at: expect.any(String),
+              author: expect.any(String),
+              body: expect.any(String),
+              article_id: 1,
+            });
+          });
+        });
+    });
+    test('GET: 200 - Responds with the correct number of comments starting from the correct position when given a valid page number', () => {
+      return request(app)
+        .get('/api/articles/1/comments?limit=5&p=2')
+        .expect(200)
+        .then(({ body: { comments } }) => {
+          expect(comments.length).toBe(5);
+          expect(comments).toBeSortedBy('created_at', { descending: true });
+          return Promise.all([
+            comments,
+            db.query(`SELECT * FROM comments WHERE article_id = 1 ORDER BY created_at DESC`),
+          ]);
+        })
+        .then(([comments, data]) => {
+          data.rows.slice(5, 10).forEach((comment, index) => {
+            expect(comment.comment_id).toEqual(comments[index].comment_id);
+          });
+        });
+    });
+    test('GET: 200 - Responds with an empty array when given a page number with no comments', () => {
+      return request(app)
+        .get('/api/articles/1/comments?p=3')
+        .expect(200)
+        .then(({ body: { comments } }) => {
+          expect(comments.length).toBe(0);
+        });
+    });
+    test('GET: 400 - Responds with a bad request message when given an invalid limit', () => {
+      return request(app)
+        .get('/api/articles/1/comments?limit=invalid_limit')
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe('Bad request');
+        });
+    });
+    test('GET: 400 - Responds with a bad request message when given an invalid page query', () => {
+      return request(app)
+        .get('/api/articles/1/comments?p=invalid_page')
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe('Bad request');
         });
     });
   });

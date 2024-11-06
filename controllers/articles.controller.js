@@ -26,13 +26,13 @@ exports.getArticleById = (req, res, next) => {
 
 exports.patchArticleVotes = (req, res, next) => {
   const { article_id } = req.params;
-  const inc_votes = req.body.inc_votes;
+  const { inc_votes } = req.body;
   const promises = [fetchArticleById(article_id), updateArticleVotes(article_id, inc_votes)];
 
   Promise.all(promises)
-    .then((results) => {
-      const newVote = results[1];
-      res.status(201).send({ msg: newVote });
+    .then((article) => {
+      //const newVote = results[1];
+      res.status(201).send({ article: article[1] });
     })
     .catch((err) => {
       next(err);
@@ -51,7 +51,7 @@ exports.postNewArticle = (req, res, next) => {
     fetchTopics(topic),
     insertNewArticle(author, title, body, topic, article_img_url),
   ];
-  
+
   Promise.all(articleElementChecker)
     .then((results) => {
       res.status(201).send({ postedArticle: results[2] });

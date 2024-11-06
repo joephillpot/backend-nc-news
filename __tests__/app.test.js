@@ -55,14 +55,14 @@ describe('/api/topics', () => {
     test('POST: 200 - Posts a topic and returns the posted topic ignoring extra properties', () => {
       return request(app)
         .post('/api/topics')
-        .send({ description: 'Test description', slug: 'Test topic', randomKey: "Random value" })
+        .send({ description: 'Test description', slug: 'Test topic', randomKey: 'Random value' })
         .expect(201)
         .then(({ body: { topic } }) => {
           expect(topic).toMatchObject({
             description: 'Test description',
             slug: 'Test topic',
           });
-          expect(topic).not.toHaveProperty("randomKey")
+          expect(topic).not.toHaveProperty('randomKey');
         });
     });
     test('POST: 400 - Responds with Bad request when not given a description', () => {
@@ -71,7 +71,7 @@ describe('/api/topics', () => {
         .send({ slug: 'Test topic' })
         .expect(400)
         .then(({ body }) => {
-          expect(body.msg).toBe("Bad request")
+          expect(body.msg).toBe('Bad request');
         });
     });
     test('POST: 400 - Responds with Bad request when not given a slug', () => {
@@ -80,7 +80,7 @@ describe('/api/topics', () => {
         .send({ description: 'Test description' })
         .expect(400)
         .then(({ body }) => {
-          expect(body.msg).toBe("Bad request")
+          expect(body.msg).toBe('Bad request');
         });
     });
   });
@@ -142,8 +142,8 @@ describe('/api/articles/:article_id', () => {
         .patch(`/api/articles/${articleId}`)
         .send(newVotes)
         .expect(201)
-        .then(({ body }) => {
-          expect(body.msg.votes).toBe(newVoteCount);
+        .then(({ body: { article } }) => {
+          expect(article.votes).toBe(newVoteCount);
         });
     });
     test('PATCH: 201 - Updates the votes count amount when passed negative inc_votes', () => {
@@ -154,8 +154,8 @@ describe('/api/articles/:article_id', () => {
         .patch(`/api/articles/${articleId}`)
         .send(newVotes)
         .expect(201)
-        .then(({ body }) => {
-          expect(body.msg.votes).toBe(newVoteCount);
+        .then(({ body: { article } }) => {
+          expect(article.votes).toBe(newVoteCount);
         });
     });
     test('PATCH: 400 - Responds with 400 Bad request when given an empty body', () => {
@@ -187,8 +187,8 @@ describe('/api/articles/:article_id', () => {
         .patch(`/api/articles/${articleId}`)
         .send(newVotes)
         .expect(201)
-        .then(({ body }) => {
-          expect(body.msg).toMatchObject({
+        .then(({ body: { article } }) => {
+          expect(article).toMatchObject({
             article_id: expect.any(Number),
             title: expect.any(String),
             author: expect.any(String),
@@ -217,8 +217,8 @@ describe('/api/articles/:article_id', () => {
         .patch(`/api/articles/${articleId}`)
         .send(newVotes)
         .expect(201)
-        .then(({ body }) => {
-          expect(body.msg).toMatchObject({
+        .then(({ body: { article } }) => {
+          expect(article).toMatchObject({
             article_id: expect.any(Number),
             title: expect.any(String),
             author: expect.any(String),
